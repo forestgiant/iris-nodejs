@@ -3,6 +3,9 @@
 *.a
 *.so
 
+# Bash scripts
+*.sh
+
 # Folders
 _obj
 _test
