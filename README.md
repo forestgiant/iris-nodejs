@@ -1,1 +1,2 @@
-# Node.js package for communicating with an Iris server.
+# Iris Client - Node.js
+Node.js package for communicating with an Iris server.
