@@ -31,33 +31,101 @@ class IrisClient {
                     return
                 } else {
                     _this.session = response.getSession()
-                    resolve(this)
+                    resolve({
+                        "session":response.getSession()
+                    })
                     return
                 }  
             })
         })
     }
 
-    getSession() {
-        return this.session
+    setValue(source, key, value) {
+        const _this = this
+        return new Promise(function(resolve, reject) {
+            const setReq = new messages.SetValueRequest()
+            setReq.setSession(_this.session)
+            setReq.setSource(source)
+            setReq.setKey(key)
+            setReq.setValue(value)
+            _this.rpc.setValue(setReq, function(err, response) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve({
+                        "value":response.getValue()
+                    })
+                }
+            })
+        })
     }
 
-    register() {
-        console.log("Registering or whatever else we are trying to do.")
+    getValue(source, key) {
+        const _this = this
+        return new Promise(function(resolve, reject) {
+            const getReq = new messages.GetValueRequest()
+            getReq.setSession(_this.session)
+            getReq.setSource(source)
+            getReq.setKey(key)
+            _this.rpc.getValue(getReq, function(err, response) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve({
+                        "value":response.getValue()
+                    })
+                }
+            })
+        })
     }
+
+    removeValue(source, key) {
+        const _this = this
+        return new Promise(function(resolve, reject) {
+            const removeReq = new messages.RemoveValueRequest()
+            removeReq.setSession(_this.session)
+            removeReq.setSource(source)
+            removeReq.setKey(key)
+            _this.rpc.removeValue(removeReq, function(err, response) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve({
+                        "session":response.getSession(),
+                        "source":response.getSource(),
+                        "key":response.getKey()
+                    })
+                }
+            })
+        })
+    }
+
+    removeSource(source) {
+        const _this = this
+        return new Promise(function(resolve, reject) {
+            const removeReq = new messages.RemoveSourceRequest()
+            removeReq.setSession(_this.session)
+            removeReq.setSource(source)
+            _this.rpc.removeSource(removeReq, function(err, response) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve({
+                        "session":response.getSession(),
+                        "source":response.getSource()
+                    })
+                }
+            })
+        })
+    }
+
+    // Listen
+    // GetSources
+    // GetKeys
+    // Subscribe
+    // SubscribeKey
+    // Unsubscribe
+    // UnsubscribeKey
 }
 
 module.exports = IrisClient;
-
-function main() {
-    var client = new IrisClient("127.0.0.1:32000", "")
-    client.connect().then(function(c){
-        console.log("Connected with session:", client.getSession())
-        client.register()
-    }, function(error) {
-        // console.log(error.Message())
-        console.log(error)
-    })
-}
-
-main();
