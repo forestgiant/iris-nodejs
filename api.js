@@ -13,9 +13,50 @@ class IrisClient {
         } else {
             this.creds = grpc.credentials.createSsl(caFile);
         }
+
+        this.sourceHandlers = new Map();
+        this.keyHandlers = new Map();
+    }
+
+    listen() {
+        var _this = this;
+        return new Promise((resolve, reject) => {
+            var request = new messages.ListenRequest();
+            request.setSession(this.session)
+            var call = this.rpc.listen(request);
+            call.on('data', response => {
+                var update = {
+                    source: response.getSource(),
+                    key: response.getKey(),
+                    value: response.getValue(),
+                }
+                
+                var shs = _this.sourceHandlers[update.source]
+                var khs;
+                if (_this.keyHandlers[update.source]) {
+                    khs = _this.keyHandlers[update.source][update.key]
+                }
+
+                if (shs) {
+                    shs.forEach(handler => {
+                        handler(update)
+                    })
+                }
+
+                if (khs) {
+                    khs.forEach(handler => {
+                        handler(update)
+                    })   
+                }
+            });
+            call.on('end', () => {});
+            call.on('error', err => {});
+            resolve();
+        })
     }
 
     connect() {
+        var _this = this;
         return new Promise((resolve, reject) => {
             if(this.serverAddress.length == 0) {
                 reject(Error("You must provide a server address to connect to."));
@@ -29,7 +70,7 @@ class IrisClient {
                     reject(Error("Failed to connect to Iris server at " + this.serverAddress));
                     return
                 } else {
-                    this.session = response.getSession();
+                    _this.session = response.getSession();
                     resolve({
                         "session":response.getSession()
                     });
@@ -153,11 +194,123 @@ class IrisClient {
         })
     }
 
-    // subscribe
-    // subscribeKey
-    // unsubscribe
-    // unsubscribeKey
-    // listen
+    subscribe(source, handler) {
+        var _this = this;
+        return new Promise((resolve, reject) => {
+            const request = new messages.SubscribeRequest();
+            request.setSession(_this.session)
+            request.setSource(source)
+
+            this.rpc.subscribe(request, function(err, response) {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (!_this.sourceHandlers[source]) {
+                        _this.sourceHandlers[source] = [];
+                    }
+
+                    if (!_this.sourceHandlers[source].includes(handler)) {
+                        _this.sourceHandlers[source].push(handler)
+                    }
+
+                    resolve({
+                        "session":_this.session,
+                        "source":response.getSource(),
+                    });
+                }
+            });
+        })
+    }
+
+    subscribeKey(source, key, handler) {
+        var _this = this;
+        return new Promise((resolve, reject) => {
+            const request = new messages.SubscribeKeyRequest();
+            request.setSession(_this.session)
+            request.setSource(source)
+            request.setKey(key)
+
+            this.rpc.subscribeKey(request, function(err, response) {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (!_this.keyHandlers[source]) {
+                        _this.keyHandlers[source] = new Map();
+                    }
+
+                    if (!_this.keyHandlers[source][key]) {
+                        _this.keyHandlers[source][key] = [];
+                    }
+
+                    if (!_this.keyHandlers[source][key].includes(handler)) {
+                        _this.keyHandlers[source][key].push(handler)
+                    }
+
+                    resolve({
+                        "session":_this.session,
+                        "source":response.getSource(),
+                        "key":response.getKey(),
+                    });
+                }
+            });
+        })
+    }
+
+    unsubscribe(source, handler) {
+        var _this = this;
+        return new Promise((resolve, reject) => {
+            const request = new messages.UnsubscribeRequest();
+            request.setSession(_this.session)
+            request.setSource(source)
+
+            this.rpc.unsubscribe(request, function(err, response) {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (_this.sourceHandlers && _this.sourceHandlers[source]) {
+                        var index = _this.sourceHandlers[source].indexOf(handler)
+                        if (index >= 0) {
+                            _this.sourceHandlers[source].splice(index, 1)
+                        }
+                    }
+                    
+                    resolve({
+                        "session":_this.session,
+                        "source":source,
+                    });
+                }
+            });
+        })
+    }
+
+    unsubscribeKey(source, key, handler) {
+        var _this = this;
+        return new Promise((resolve, reject) => {
+            const request = new messages.UnsubscribeKeyRequest();
+            request.setSession(_this.session)
+            request.setSource(source)
+            request.setKey(key)
+
+            this.rpc.unsubscribeKey(request, function(err, response) {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (_this.keyHandlers && _this.keyHandlers[source] && _this.keyHandlers[source][key]) {
+                        var index = _this.keyHandlers[source][key].indexOf(handler)
+                        if (index >= 0) {
+                            _this.keyHandlers[source][key].splice(index, 1)
+                        }
+                    }
+
+                    resolve({
+                        "session":_this.session,
+                        "source":source,
+                        "key":key,
+                    });
+                }
+            });
+        })
+    }
 }
 
 module.exports = IrisClient;

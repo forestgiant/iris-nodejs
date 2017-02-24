@@ -1,11 +1,23 @@
 const iris_client = require("./api.js");
 const textEncoding = require('text-encoding');
 
+var handleUpdate = function(update){
+    console.log("Received:", update)
+}
+
 function main() {
     var client = new iris_client("127.0.0.1:32000", "");
-    client.connect()
-    .then(function(connectResponse){
+    client.connect().then(function(connectResponse){
         console.log("Session: ", connectResponse.session);
+        return client.listen();
+    }).then(function(){
+        console.log("Listening")
+        return client.subscribe("company", handleUpdate)
+    }).then(function(subscribeResponse){
+        console.log("SubscribeResponse: ", subscribeResponse);
+        return client.subscribeKey("company", "dev", handleUpdate)
+    }).then(function(subscribeKeyResponse){
+        console.log("SubscribeKeyResponse: ", subscribeKeyResponse);
         var encodedDev = new textEncoding.TextEncoder("utf-8").encode("stephan");
         return client.setValue("company", "dev", encodedDev)
     }).then(function(setResponse){
@@ -32,6 +44,12 @@ function main() {
         return client.removeSource("company")
     }).then(function(removeSourceResponse){
         console.log("RemoveSourceResponse: ", removeSourceResponse);
+        return client.unsubscribe("company", handleUpdate)
+    }).then(function(unsubscribeResponse){
+        console.log("UnsubscribeResponse: ", unsubscribeResponse);
+        return client.unsubscribeKey("company", "dev", handleUpdate)
+    }).then(function(unsubscribeKeyResponse){
+        console.log("UnsubscribeKeyResponse: ", unsubscribeKeyResponse);
     }).catch(function(error){
         console.log(error);
     })
