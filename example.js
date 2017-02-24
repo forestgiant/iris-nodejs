@@ -20,6 +20,12 @@ function main() {
     }).then(function(getResponse){
         var decodedGetDesignerResponse = new textEncoding.TextDecoder('utf-8').decode(getResponse.value)
         console.log("GetValueResponse: ", decodedGetDesignerResponse)
+        return client.getSources()
+    }).then(function(sources){
+        console.log("Sources: ", sources)
+        return client.getKeys("company")
+    }).then(function(keys){
+        console.log("Keys: ", keys)
         return client.removeValue("company", "designer")
     }).then(function(removeValueResponse){
         console.log("RemoveValueResponse: ", removeValueResponse)

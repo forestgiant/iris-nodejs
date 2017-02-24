@@ -113,6 +113,51 @@ class IrisClient {
             })
         })
     }
+
+    getSources(){
+        return new Promise((resolve, reject) => {
+            const request = new messages.GetSourcesRequest()
+            request.setSession(this.session)
+
+            var sources = []
+            var call = this.rpc.getSources(request);
+            call.on('data', response => {
+                sources.push(response.getSource())
+            });
+            call.on('end', () => {
+                resolve(sources)
+            });
+            call.on('error', err => {
+                reject(err)
+            });
+        })
+    }
+
+    getKeys(source) {
+        return new Promise((resolve, reject) => {
+            const request = new messages.GetKeysRequest()
+            request.setSession(this.session)
+            request.setSource(source)
+
+            var keys = []
+            var call = this.rpc.getKeys(request)
+            call.on('data', response => {
+                keys.push(response.getKey())
+            });
+            call.on('end', () => {
+                resolve(keys)
+            });
+            call.on('error', err => {
+                reject(err)
+            });
+        })
+    }
+
+    // subscribe
+    // subscribeKey
+    // unsubscribe
+    // unsubscribeKey
+    // listen
 }
 
 module.exports = IrisClient;
