@@ -16,21 +16,20 @@ class IrisClient {
     }
 
     connect() {
-        const _this = this
-        return new Promise(function(resolve, reject){
-            if(_this.serverAddress.length == 0) {
+        return new Promise((resolve, reject) => {
+            if(this.serverAddress.length == 0) {
                 reject(Error("You must provide a server address to connect to."))
                 return
             }
 
-            _this.rpc = new services.IrisClient(_this.serverAddress, _this.creds);
+            this.rpc = new services.IrisClient(this.serverAddress, this.creds);
             const connectReq = new messages.ConnectRequest()
-            _this.rpc.connect(connectReq, function(err, response) {
+            this.rpc.connect(connectReq, function(err, response) {
                 if (err) {
-                    reject(Error("Failed to connect to Iris server at " + _this.serverAddress))
+                    reject(Error("Failed to connect to Iris server at " + this.serverAddress))
                     return
                 } else {
-                    _this.session = response.getSession()
+                    this.session = response.getSession()
                     resolve({
                         "session":response.getSession()
                     })
@@ -41,14 +40,13 @@ class IrisClient {
     }
 
     setValue(source, key, value) {
-        const _this = this
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             const setReq = new messages.SetValueRequest()
-            setReq.setSession(_this.session)
+            setReq.setSession(this.session)
             setReq.setSource(source)
             setReq.setKey(key)
             setReq.setValue(value)
-            _this.rpc.setValue(setReq, function(err, response) {
+            this.rpc.setValue(setReq, function(err, response) {
                 if (err) {
                     reject(err)
                 } else {
@@ -61,13 +59,12 @@ class IrisClient {
     }
 
     getValue(source, key) {
-        const _this = this
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             const getReq = new messages.GetValueRequest()
-            getReq.setSession(_this.session)
+            getReq.setSession(this.session)
             getReq.setSource(source)
             getReq.setKey(key)
-            _this.rpc.getValue(getReq, function(err, response) {
+            this.rpc.getValue(getReq, function(err, response) {
                 if (err) {
                     reject(err)
                 } else {
@@ -80,13 +77,12 @@ class IrisClient {
     }
 
     removeValue(source, key) {
-        const _this = this
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             const removeReq = new messages.RemoveValueRequest()
-            removeReq.setSession(_this.session)
+            removeReq.setSession(this.session)
             removeReq.setSource(source)
             removeReq.setKey(key)
-            _this.rpc.removeValue(removeReq, function(err, response) {
+            this.rpc.removeValue(removeReq, function(err, response) {
                 if (err) {
                     reject(err)
                 } else {
@@ -101,12 +97,11 @@ class IrisClient {
     }
 
     removeSource(source) {
-        const _this = this
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             const removeReq = new messages.RemoveSourceRequest()
-            removeReq.setSession(_this.session)
+            removeReq.setSession(this.session)
             removeReq.setSource(source)
-            _this.rpc.removeSource(removeReq, function(err, response) {
+            this.rpc.removeSource(removeReq, function(err, response) {
                 if (err) {
                     reject(err)
                 } else {
@@ -118,14 +113,6 @@ class IrisClient {
             })
         })
     }
-
-    // Listen
-    // GetSources
-    // GetKeys
-    // Subscribe
-    // SubscribeKey
-    // Unsubscribe
-    // UnsubscribeKey
 }
 
 module.exports = IrisClient;
