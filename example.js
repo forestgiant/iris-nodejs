@@ -51,6 +51,7 @@ function main() {
         return client.unsubscribeKey("company", "dev", handleUpdate);
     }).then(function(unsubscribeKeyResponse){
         console.log("UnsubscribeKeyResponse: ", unsubscribeKeyResponse);
+        client.close();
     }).catch(function(error){
         console.log(error);
     });

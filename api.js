@@ -18,13 +18,23 @@ class IrisClient {
         this.keyHandlers = new Map();
     }
 
+    close() {
+        this.listener.cancel();
+        this.listener = null;
+        this.serverAddress = null;
+        this.creds = null;
+        this.session = null;
+        this.sourceHandlers = null;
+        this.keyHandlers = null;   
+    }
+
     listen() {
         var _this = this;
         return new Promise((resolve, reject) => {
             var request = new messages.ListenRequest();
             request.setSession(this.session);
-            var call = this.rpc.listen(request);
-            call.on('data', response => {
+            _this.listener = this.rpc.listen(request);
+            _this.listener.on('data', response => {
                 var update = {
                     source: response.getSource(),
                     key: response.getKey(),
@@ -49,8 +59,8 @@ class IrisClient {
                     });
                 }
             });
-            call.on('end', () => {});
-            call.on('error', err => {});
+            _this.listener.on('end', () => {});
+            _this.listener.on('error', err => {});
             resolve();
         });
     }
