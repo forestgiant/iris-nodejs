@@ -10,9 +10,6 @@ function main() {
     var client = new iris_client("127.0.0.1:32000", "");
     client.connect().then(function(connectResponse){
         console.log("Session: ", connectResponse.session);
-        return client.listen();
-    }).then(function(){
-        console.log("Listening");
         return client.subscribe("company", handleUpdate);
     }).then(function(subscribeResponse){
         console.log("SubscribeResponse: ", subscribeResponse);
