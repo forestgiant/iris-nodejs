@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 const messages = require('./iris_pb.js');
 const services = require('./iris_grpc_pb.js');
 const grpc = require('grpc');
@@ -7,8 +8,7 @@ const defaultIrisPort = 32000;
 class IrisClient {
     constructor(serverAddress, caFile) {
         this.serverAddress = serverAddress;
-        var caFile;
-        if (!caFile || caFile.length == 0) {
+        if (!caFile || caFile.length === 0) {
             this.creds = grpc.credentials.createInsecure();
         } else {
             this.creds = grpc.credentials.createSsl(caFile);
@@ -22,45 +22,45 @@ class IrisClient {
         var _this = this;
         return new Promise((resolve, reject) => {
             var request = new messages.ListenRequest();
-            request.setSession(this.session)
+            request.setSession(this.session);
             var call = this.rpc.listen(request);
             call.on('data', response => {
                 var update = {
                     source: response.getSource(),
                     key: response.getKey(),
                     value: response.getValue(),
-                }
+                };
                 
-                var shs = _this.sourceHandlers[update.source]
+                var shs = _this.sourceHandlers[update.source];
                 var khs;
                 if (_this.keyHandlers[update.source]) {
-                    khs = _this.keyHandlers[update.source][update.key]
+                    khs = _this.keyHandlers[update.source][update.key];
                 }
 
                 if (shs) {
                     shs.forEach(handler => {
-                        handler(update)
-                    })
+                        handler(update);
+                    });
                 }
 
                 if (khs) {
                     khs.forEach(handler => {
-                        handler(update)
-                    })   
+                        handler(update);
+                    });
                 }
             });
             call.on('end', () => {});
             call.on('error', err => {});
             resolve();
-        })
+        });
     }
 
     connect() {
         var _this = this;
         return new Promise((resolve, reject) => {
-            if(this.serverAddress.length == 0) {
+            if(this.serverAddress.length === 0) {
                 reject(Error("You must provide a server address to connect to."));
-                return
+                return;
             }
 
             this.rpc = new services.IrisClient(this.serverAddress, this.creds);
@@ -68,16 +68,16 @@ class IrisClient {
             this.rpc.connect(connectReq, function(err, response) {
                 if (err) {
                     reject(Error("Failed to connect to Iris server at " + this.serverAddress));
-                    return
+                    return;
                 } else {
                     _this.session = response.getSession();
                     resolve({
                         "session":response.getSession()
                     });
-                    return
+                    return;
                 }  
-            })
-        })
+            });
+        });
     }
 
     setValue(source, key, value) {
@@ -96,7 +96,7 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     getValue(source, key) {
@@ -114,7 +114,7 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     removeValue(source, key) {
@@ -134,7 +134,7 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     removeSource(source) {
@@ -152,7 +152,7 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     getSources(){
@@ -171,7 +171,7 @@ class IrisClient {
             call.on('error', err => {
                 reject(err);
             });
-        })
+        });
     }
 
     getKeys(source) {
@@ -191,15 +191,15 @@ class IrisClient {
             call.on('error', err => {
                 reject(err);
             });
-        })
+        });
     }
 
     subscribe(source, handler) {
         var _this = this;
         return new Promise((resolve, reject) => {
             const request = new messages.SubscribeRequest();
-            request.setSession(_this.session)
-            request.setSource(source)
+            request.setSession(_this.session);
+            request.setSource(source);
 
             this.rpc.subscribe(request, function(err, response) {
                 if (err) {
@@ -210,7 +210,7 @@ class IrisClient {
                     }
 
                     if (!_this.sourceHandlers[source].includes(handler)) {
-                        _this.sourceHandlers[source].push(handler)
+                        _this.sourceHandlers[source].push(handler);
                     }
 
                     resolve({
@@ -219,16 +219,16 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     subscribeKey(source, key, handler) {
         var _this = this;
         return new Promise((resolve, reject) => {
             const request = new messages.SubscribeKeyRequest();
-            request.setSession(_this.session)
-            request.setSource(source)
-            request.setKey(key)
+            request.setSession(_this.session);
+            request.setSource(source);
+            request.setKey(key);
 
             this.rpc.subscribeKey(request, function(err, response) {
                 if (err) {
@@ -243,7 +243,7 @@ class IrisClient {
                     }
 
                     if (!_this.keyHandlers[source][key].includes(handler)) {
-                        _this.keyHandlers[source][key].push(handler)
+                        _this.keyHandlers[source][key].push(handler);
                     }
 
                     resolve({
@@ -253,24 +253,24 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     unsubscribe(source, handler) {
         var _this = this;
         return new Promise((resolve, reject) => {
             const request = new messages.UnsubscribeRequest();
-            request.setSession(_this.session)
-            request.setSource(source)
+            request.setSession(_this.session);
+            request.setSource(source);
 
             this.rpc.unsubscribe(request, function(err, response) {
                 if (err) {
                     reject(err);
                 } else {
                     if (_this.sourceHandlers && _this.sourceHandlers[source]) {
-                        var index = _this.sourceHandlers[source].indexOf(handler)
+                        var index = _this.sourceHandlers[source].indexOf(handler);
                         if (index >= 0) {
-                            _this.sourceHandlers[source].splice(index, 1)
+                            _this.sourceHandlers[source].splice(index, 1);
                         }
                     }
                     
@@ -280,25 +280,25 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 
     unsubscribeKey(source, key, handler) {
         var _this = this;
         return new Promise((resolve, reject) => {
             const request = new messages.UnsubscribeKeyRequest();
-            request.setSession(_this.session)
-            request.setSource(source)
-            request.setKey(key)
+            request.setSession(_this.session);
+            request.setSource(source);
+            request.setKey(key);
 
             this.rpc.unsubscribeKey(request, function(err, response) {
                 if (err) {
                     reject(err);
                 } else {
                     if (_this.keyHandlers && _this.keyHandlers[source] && _this.keyHandlers[source][key]) {
-                        var index = _this.keyHandlers[source][key].indexOf(handler)
+                        var index = _this.keyHandlers[source][key].indexOf(handler);
                         if (index >= 0) {
-                            _this.keyHandlers[source][key].splice(index, 1)
+                            _this.keyHandlers[source][key].splice(index, 1);
                         }
                     }
 
@@ -309,7 +309,7 @@ class IrisClient {
                     });
                 }
             });
-        })
+        });
     }
 }
 
