@@ -376,6 +376,21 @@ class IrisClient {
                 reject(errClientNotConnected);
             }
 
+            if (this.sourceHandlers && this.sourceHandlers[source]) {
+                var index = this.sourceHandlers[source].indexOf(handler);
+                if (index >= 0) {
+                    this.sourceHandlers[source].splice(index, 1);
+                }
+
+                if (this.sourceHandlers[source].length > 0) {
+                    resolve({
+                        "session":this.session,
+                        "source":source,
+                    });
+                    return;
+                } 
+            }
+    
             const request = new messages.UnsubscribeRequest();
             request.setSession(this.session);
             request.setSource(source);
@@ -384,17 +399,11 @@ class IrisClient {
                 if (err) {
                     reject(err);
                 } else {
-                    if (this.sourceHandlers && this.sourceHandlers[source]) {
-                        var index = this.sourceHandlers[source].indexOf(handler);
-                        if (index >= 0) {
-                            this.sourceHandlers[source].splice(index, 1);
-                        }
-                    }
-                    
                     resolve({
                         "session":this.session,
                         "source":source,
                     });
+                    return;
                 }
             });
         });
@@ -413,6 +422,22 @@ class IrisClient {
                 reject(errClientNotConnected);
             }
 
+            if (this.keyHandlers && this.keyHandlers[source] && this.keyHandlers[source][key]) {
+                var index = this.keyHandlers[source][key].indexOf(handler);
+                if (index >= 0) {
+                    this.keyHandlers[source][key].splice(index, 1);
+                }
+
+                if (this.keyHandlers[source][key].length > 0) {
+                    resolve({
+                        "session":this.session,
+                        "source":source,
+                        "key":key,
+                    });
+                    return;
+                }
+            }
+
             const request = new messages.UnsubscribeKeyRequest();
             request.setSession(this.session);
             request.setSource(source);
@@ -422,13 +447,6 @@ class IrisClient {
                 if (err) {
                     reject(err);
                 } else {
-                    if (this.keyHandlers && this.keyHandlers[source] && this.keyHandlers[source][key]) {
-                        var index = this.keyHandlers[source][key].indexOf(handler);
-                        if (index >= 0) {
-                            this.keyHandlers[source][key].splice(index, 1);
-                        }
-                    }
-
                     resolve({
                         "session":this.session,
                         "source":source,
