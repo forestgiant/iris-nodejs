@@ -3,8 +3,8 @@ const messages = require('./iris_pb.js');
 const services = require('./iris_grpc_pb.js');
 const grpc = require('grpc');
 
-const defaultIrisPort = 32000;
-const errClientNotConnected = new Error("The client must be connected before it can be used to send requests to the server.");
+const defaultIrisAddress = '127.0.0.1:32000';
+const errClientNotConnected = new Error('The client must be connected before it can be used to send requests to the server.');
 
 /**
    * Creates a new iris client used to communicate with an iris server via gRPC.
@@ -24,6 +24,8 @@ class IrisClient {
         this.sourceHandlers = new Map();
         this.keyHandlers = new Map();
         this.connected = false;
+        this.listener = null;
+        this.rpc = null;
     }
 
     /**
@@ -34,7 +36,7 @@ class IrisClient {
     connect(errorCallback) {
         return new Promise((resolve, reject) => {
             if (this.serverAddress.length === 0) {
-                reject(Error("You must provide a server address to connect to."));
+                reject(Error('You must provide a server address to connect to.'));
                 return;
             }
 
@@ -42,7 +44,7 @@ class IrisClient {
             const connectReq = new messages.ConnectRequest();
             this.rpc.connect(connectReq, (err, response) => {
                 if (err) {
-                    reject(Error("Failed to connect to Iris server at " + this.serverAddress));
+                    reject(Error('Failed to connect to Iris server at ' + this.serverAddress));
                     return;
                 } else {
                     this.session = response.getSession();
@@ -57,19 +59,22 @@ class IrisClient {
                             value: response.getValue(),
                         };
                         
-                        var shs = this.sourceHandlers[update.source];
-                        var khs;
-                        if (this.keyHandlers[update.source]) {
-                            khs = this.keyHandlers[update.source][update.key];
-                        }
+                        var shs = [], khs = [];
+                        if (this.sourceHandlers && update.source) {
+                            shs = this.sourceHandlers[update.source];
 
-                        if (shs) {
+                            if (this.keyHandlers && this.keyHandlers[update.source] && update.key) {
+                                khs = this.keyHandlers[update.source][update.key];
+                            }
+                        }
+                        
+                        if(shs) {
                             shs.forEach(handler => {
                                 handler(update);
                             });
                         }
 
-                        if (khs) {
+                        if(khs) {
                             khs.forEach(handler => {
                                 handler(update);
                             });
@@ -83,7 +88,7 @@ class IrisClient {
                     });
                     
                     this.connected = true;
-                    resolve({"session":this.session});
+                    resolve({'session':this.session});
                     return;
                 }  
             });
@@ -131,7 +136,7 @@ class IrisClient {
                     reject(err);
                 } else {
                     resolve({
-                        "value":response.getValue()
+                        'value':response.getValue()
                     });
                 }
             });
@@ -159,7 +164,7 @@ class IrisClient {
                     reject(err);
                 } else {
                     resolve({
-                        "value":response.getValue()
+                        'value':response.getValue()
                     });
                 }
             });
@@ -187,9 +192,9 @@ class IrisClient {
                     reject(err);
                 } else {
                     resolve({
-                        "session":response.getSession(),
-                        "source":response.getSource(),
-                        "key":response.getKey()
+                        'session':response.getSession(),
+                        'source':response.getSource(),
+                        'key':response.getKey()
                     });
                 }
             });
@@ -215,8 +220,8 @@ class IrisClient {
                     reject(err);
                 } else {
                     resolve({
-                        "session":response.getSession(),
-                        "source":response.getSource()
+                        'session':response.getSession(),
+                        'source':response.getSource()
                     });
                 }
             });
@@ -310,8 +315,8 @@ class IrisClient {
                     }
 
                     resolve({
-                        "session":this.session,
-                        "source":response.getSource(),
+                        'session':this.session,
+                        'source':response.getSource(),
                     });
                 }
             });
@@ -355,9 +360,9 @@ class IrisClient {
                     }
 
                     resolve({
-                        "session":this.session,
-                        "source":response.getSource(),
-                        "key":response.getKey(),
+                        'session':this.session,
+                        'source':response.getSource(),
+                        'key':response.getKey(),
                     });
                 }
             });
@@ -384,8 +389,8 @@ class IrisClient {
 
                 if (this.sourceHandlers[source].length > 0) {
                     resolve({
-                        "session":this.session,
-                        "source":source,
+                        'session':this.session,
+                        'source':source,
                     });
                     return;
                 } 
@@ -400,8 +405,8 @@ class IrisClient {
                     reject(err);
                 } else {
                     resolve({
-                        "session":this.session,
-                        "source":source,
+                        'session':this.session,
+                        'source':source,
                     });
                     return;
                 }
@@ -430,9 +435,9 @@ class IrisClient {
 
                 if (this.keyHandlers[source][key].length > 0) {
                     resolve({
-                        "session":this.session,
-                        "source":source,
-                        "key":key,
+                        'session':this.session,
+                        'source':source,
+                        'key':key,
                     });
                     return;
                 }
@@ -448,9 +453,9 @@ class IrisClient {
                     reject(err);
                 } else {
                     resolve({
-                        "session":this.session,
-                        "source":source,
-                        "key":key,
+                        'session':this.session,
+                        'source':source,
+                        'key':key,
                     });
                 }
             });
@@ -458,4 +463,6 @@ class IrisClient {
     }
 }
 
+IrisClient.defaultIrisAddress = defaultIrisAddress;
+IrisClient.errClientNotConnected = errClientNotConnected;
 module.exports = IrisClient;

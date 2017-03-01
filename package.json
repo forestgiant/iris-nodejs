@@ -13,5 +13,7 @@
     "grpc": "^1.1.2",
     "text-encoding": "^0.6.4"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "tape": "^4.6.3"
+  }
 }
