@@ -58,6 +58,7 @@ function main() {
         client.close();
     }).catch(function(error){
         console.log(error);
+        client.close();
     });
 }
 main();
