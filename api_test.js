@@ -298,17 +298,20 @@ test('Cleanup', (t) => {
     client.connect().then(()=>{
         return client.getSources();
     }).then((sources) => {
+        var promises = [];
         if(sources) {
             sources.forEach((source) => {
-                client.removeSource(source).then((response) => {
-                    // source was removed
-                }, (error) => {
-                    t.error(error);
-                });
+                promises.push(client.removeSource(source));
             });
         }
-        client.close();
-        t.end();
+
+        Promise.all(promises).then((response) => {
+            t.end();
+            client.close();
+        }).catch((error) => {
+            t.end();
+            client.close();
+        });
     }).catch((error) => {
         client.close();
         t.end(error);
