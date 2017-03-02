@@ -2,18 +2,17 @@
 const test = require('tape');
 const iris_api = require('./api.js');
 const messages = require('./iris_pb.js');
-const textEncoding = require('text-encoding');
 
 const irisAddress = iris_api.defaultIrisAddress;
 const testSource = 'fg-iris-nodejs-test-source1';
 const testSource2 = 'fg-iris-nodejs-test-source2';
 
 function encode(value) {
-    return new textEncoding.TextEncoder('utf-8').encode(value);
+    return Buffer.from(value).toString('base64');
 }
 
 function decode(value) {
-    return new textEncoding.TextDecoder('utf-8').decode(value);
+    return Buffer.from(value, 'base64').toString();
 }
 
 test('Test client', (t) => {
