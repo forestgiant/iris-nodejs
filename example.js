@@ -1,17 +1,16 @@
 /*jshint esversion: 6 */
 const iris_client = require('./api.js');
-const textEncoding = require('text-encoding');
 
 var handleUpdate = function(update){
     console.log('Received:', update);
 };
 
 function encode(value) {
-    return new textEncoding.TextEncoder('utf-8').encode(value);
+    return Buffer.from(value).toString('base64');
 }
 
 function decode(value) {
-    return new textEncoding.TextDecoder('utf-8').decode(value);
+    return Buffer.from(value, 'base64').toString();
 }
 
 function main() {

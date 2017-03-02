@@ -10,8 +10,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "google-protobuf": "^3.2.0",
-    "grpc": "^1.1.2",
-    "text-encoding": "^0.6.4"
+    "grpc": "^1.1.2"
   },
   "devDependencies": {
     "tape": "^4.6.3"
