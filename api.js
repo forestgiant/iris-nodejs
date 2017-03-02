@@ -2,6 +2,7 @@
 const messages = require('./iris_pb.js');
 const services = require('./iris_grpc_pb.js');
 const grpc = require('grpc');
+const fs = require('fs');
 
 const defaultIrisAddress = '127.0.0.1:32000';
 const errClientNotConnected = new Error('The client must be connected before it can be used to send requests to the server.');
@@ -18,7 +19,7 @@ class IrisClient {
         if (!caFile || caFile.length === 0) {
             this.creds = grpc.credentials.createInsecure();
         } else {
-            this.creds = grpc.credentials.createSsl(caFile);
+            this.creds = grpc.credentials.createSsl(fs.readFileSync(caFile));
         }
 
         this.sourceHandlers = new Map();
