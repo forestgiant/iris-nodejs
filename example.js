@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 const iris_client = require('./api.js');
 
-var handleUpdate = function(update){
+var handler = function(update){
     console.log('Received:', update);
 };
 
@@ -14,13 +14,13 @@ function decode(value) {
 }
 
 function main() {
-    var client = new iris_client('127.0.0.1:32000', '');
+    var client = new iris_client(iris_client.defaultIrisAddress);
     client.connect().then(function(connectResponse){
         console.log('Session: ', connectResponse.session);
-        return client.subscribe('company', handleUpdate);
+        return client.subscribe('company', handler);
     }).then(function(subscribeResponse){
         console.log('SubscribeResponse: ', subscribeResponse);
-        return client.subscribeKey('company', 'dev', handleUpdate);
+        return client.subscribeKey('company', 'dev', handler);
     }).then(function(subscribeKeyResponse){
         console.log('SubscribeKeyResponse: ', subscribeKeyResponse);
         var encodedDev = encode('stephan');
@@ -49,10 +49,10 @@ function main() {
         return client.removeSource('company');
     }).then(function(removeSourceResponse){
         console.log('RemoveSourceResponse: ', removeSourceResponse);
-        return client.unsubscribe('company', handleUpdate);
+        return client.unsubscribe('company', handler);
     }).then(function(unsubscribeResponse){
         console.log('UnsubscribeResponse: ', unsubscribeResponse);
-        return client.unsubscribeKey('company', 'dev', handleUpdate);
+        return client.unsubscribeKey('company', 'dev', handler);
     }).then(function(unsubscribeKeyResponse){
         console.log('UnsubscribeKeyResponse: ', unsubscribeKeyResponse);
         client.close();
@@ -61,4 +61,5 @@ function main() {
         client.close();
     });
 }
+
 main();

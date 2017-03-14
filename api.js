@@ -10,16 +10,23 @@ const errClientNotConnected = new Error('The client must be connected before it 
 /**
    * Creates a new iris client used to communicate with an iris server via gRPC.
    * @param {string} serverAddress - IPv4 and Port of the stela server you want to communicate with.
-   * @param {string} caFile - Certificate authority file to use for gRPC connections.
+   * @param {string} serverName - Common name of the server you want to communicate with.
+   * @param {string} certFile - Certificate file used to encrypt gRPC communication.
+   * @param {string} keyFile - Private key file used to encrypt gRPC communication.
+   * @param {string} caFile - Certificate Authority file used for gRPC communication.
    * @constructor
    */
 class IrisClient {
-    constructor(serverAddress, caFile) {
+    constructor(serverAddress, serverName, certFile, keyFile, caFile) {
         this.serverAddress = serverAddress;
-        if (!caFile || caFile.length === 0) {
+        if (!certFile || certFile.length === 0) {
             this.creds = grpc.credentials.createInsecure();
         } else {
-            this.creds = grpc.credentials.createSsl(fs.readFileSync(caFile));
+            this.creds = grpc.credentials.createSsl(
+                fs.readFileSync(caFile), 
+                fs.readFileSync(keyFile), 
+                fs.readFileSync(certFile)
+            );
         }
 
         this.sourceHandlers = new Map();

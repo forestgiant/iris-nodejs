@@ -6,3 +6,7 @@ node_modules
 
 # Ignore editors
 .vscode
+
+# Ignore ssl certificates and private keys
+*.crt
+*.key
