@@ -5,6 +5,7 @@ const grpc = require('grpc');
 const fs = require('fs');
 
 const defaultIrisAddress = '127.0.0.1:32000';
+const defaultIrisServerName = `Iris`;
 const errClientNotConnected = new Error('The client must be connected before it can be used to send requests to the server.');
 
 /**
@@ -27,6 +28,8 @@ class IrisClient {
                 fs.readFileSync(keyFile), 
                 fs.readFileSync(certFile)
             );
+
+            this.opts = { 'grpc.ssl_target_name_override': serverName };
         }
 
         this.sourceHandlers = new Map();
@@ -48,7 +51,7 @@ class IrisClient {
                 return;
             }
 
-            this.rpc = new services.IrisClient(this.serverAddress, this.creds);
+            this.rpc = new services.IrisClient(this.serverAddress, this.creds, this.opts);
             const connectReq = new messages.ConnectRequest();
             this.rpc.connect(connectReq, (err, response) => {
                 if (err) {
@@ -471,6 +474,7 @@ class IrisClient {
     }
 }
 
+IrisClient.defaultIrisServerName = defaultIrisServerName;
 IrisClient.defaultIrisAddress = defaultIrisAddress;
 IrisClient.errClientNotConnected = errClientNotConnected;
 module.exports = IrisClient;

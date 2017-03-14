@@ -14,7 +14,7 @@ function decode(value) {
 }
 
 function main() {
-    var client = new iris_client(iris_client.defaultIrisAddress);
+    var client = new iris_client(iris_client.defaultIrisAddress, iris_client.defaultIrisServerName, "client.crt", "client.key", "ca.crt");
     client.connect().then(function(connectResponse){
         console.log('Session: ', connectResponse.session);
         return client.subscribe('company', handler);
