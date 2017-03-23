@@ -1,4 +1,8 @@
-## Iris Client
+![Iris](https://dl.dropboxusercontent.com/s/07xoqwa2wsq622j/fg-github-iris.png?dl=0 "Iris logo")
+
+[![Docs](https://dl.dropboxusercontent.com/s/a1ebd9j8kkqzzk9/github-button-iris.png?dl=0 "Iris API Docs")](https://docs.forestgiant.com/iris/api/?toggle=node)
+[![Gitter](https://dl.dropboxusercontent.com/s/j38ui4m1vwhb7qq/github-button-chat.png "Iris on Gitter")](https://gitter.im/forestgiant/Lobby)
+
 This package provides an IrisClient which can be used to communicate with an Iris server using the gRPC protocol and Node.js.  With the exception of the `Close` method, which finishes immediately, the methods of IrisClient make use of Promises to return response objects.
 
 ### Constructor
